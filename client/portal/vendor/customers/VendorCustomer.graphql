@@ -1,0 +1,153 @@
+fragment VendorCustomer on Buyer {
+  id
+  hasLedgers
+  hasPayments
+  versionId
+  netTerms
+  interval
+  postPay
+  micrositeType
+  member {
+    id
+    parentId
+    type
+    buyerGroupTypeId
+    address {
+      line1
+      line2
+      longitude
+      latitude
+      state
+      city
+      postalCode
+    }
+    email
+    phone
+    company
+  }
+  rules {
+    id
+    name
+  }
+  blockedProviders {
+    id
+  }
+  exclusiveProviders {
+    id
+  }
+  fields {
+    booleanValue
+    numberValue
+    fieldId
+    textValue
+  }
+  performables {
+    id
+    performableId
+    expense
+    revenue
+    overrideType
+    properties {
+      propertyId
+      expense
+      revenue
+      overrideType
+      propertyValueId
+    }
+  }
+  users {
+    id
+    userId
+    roles {
+      id
+    }
+  }
+}
+
+query VendorCustomerDefaultRoles($vendorId: ID!) {
+  vendor(memberId: $vendorId) {
+    id
+    payLaterDefault
+    defaultRoles(roleType: BUYER) {
+      id
+    }
+  }
+}
+
+query VendorCustomerGet($buyerId: ID!) {
+  buyer(buyerId: $buyerId) {
+    ...VendorCustomer
+  }
+}
+
+query VendorMemberGet($memberId: ID!) {
+  member(memberId: $memberId) {
+    id
+    company
+  }
+}
+
+query VendorCustomerProvider($buyerId: ID!, $vendorId: ID!) {
+  buyer(buyerId: $buyerId) {
+    id
+    blockedProviders {
+      id
+      member {
+        id
+        company
+      }
+    }
+    exclusiveProviders {
+      id
+      member {
+        id
+        company
+      }
+    }
+  }
+  vendor(memberId: $vendorId) {
+    id
+    providers {
+      id
+      member {
+        id
+        company
+      }
+    }
+  }
+}
+
+query RangeAppointments($start: DateTime!, $end: DateTime!, $vendorId: ID!) {
+  rangeAppointments(start: $start, end: $end, vendorId: $vendorId) {
+    id
+    company
+  }
+}
+
+mutation VendorCustomerCreate($vendorId: ID!, $data: BuyerWrite!, $sendEmail: Boolean!) {
+  createBuyer(vendorId: $vendorId, data: $data, sendEmail: $sendEmail) {
+    ...VendorCustomer
+  }
+}
+
+mutation VendorBuyerUpdate($buyerRelId: ID!, $data: BuyerWrite!, $versionId: Int!) {
+  updateBuyer(buyerId: $buyerRelId, data: $data, versionId: $versionId) {
+    ...VendorCustomer
+  }
+}
+
+mutation VendorBuyerDelete($vendorId: ID!, $buyerId: ID!) {
+  deleteBuyer(vendorId: $vendorId, buyerId: $buyerId)
+}
+
+mutation VendorSaveBuyerContacts($buyerRelId: ID!, $contacts: [ContactUserWrite!]!) {
+  saveBuyerContacts(buyerRelId: $buyerRelId, contacts: $contacts)
+}
+
+mutation VendorBuyerNotify($buyerRelId: ID!, $data: ManualNotification!) {
+  sendBuyerNotification(buyerRelId: $buyerRelId, data: $data)
+}
+
+mutation VendorAppointmentsNotify($vendorId: ID!, $start: DateTime!, $end: DateTime!, $data: ManualNotification!) {
+  sendAppointmentNotifications(vendorId: $vendorId, start: $start, end: $end, data: $data)
+}

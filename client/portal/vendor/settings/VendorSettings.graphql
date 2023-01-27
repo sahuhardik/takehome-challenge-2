@@ -1,0 +1,393 @@
+query VendorSettings($vendorId: ID!) {
+  vendor(memberId: $vendorId) {
+    id
+    themeBackground
+    themeLogo {
+      s3
+      mime
+      name
+    }
+    themePrimary
+    themeSecondary
+    stripeTest
+    payLaterDefault
+    cartDomain
+    cartThanks
+    cartTerms
+    timezone
+    loginBoxInfo
+    serviceArea
+    businessHours {
+      hours {
+        from {
+          hour
+          minute
+        }
+        to {
+          hour
+          minute
+        }
+      }
+    }
+    micrositeConfig {
+      defaultType
+      hdPhotoHub {
+        apiKey
+        url
+      }
+      rela {
+        apiKey
+        token
+        uid
+      }
+    }
+    hdPhotoHubApiKey
+    hdPhotoHubUrl
+    buyerReminderMinutes
+    buyerDailyReminder
+    inlineScheduling
+    collapseTimeSlots
+    requireRequestTimes
+    requestTimesError
+    reviewOrder
+    showCalendarTitles
+    notifications {
+      __typename
+      type
+      message
+      enabled
+      global
+      method
+      ... on NotificationConfigEmail {
+        __typename
+        subject
+        attachments {
+          mime
+          name
+          url
+        }
+      }
+      ... on NotificationConfigSlack {
+        __typename
+        channel
+      }
+    }
+    buyerNotificationWindow {
+      start
+      stop
+    }
+    providerNotificationWindow {
+      start
+      stop
+    }
+    fields {
+      id
+      name
+      apiName
+      order
+      defaultable
+      group
+      visibility
+      showOnReschedule
+      defaultValue
+      requiredOnCreate
+      showBeforeSubmit
+      showOnScheduleHover
+      showOnOrderList
+      showOnCreateOrder
+      showOnHoldOrder
+      showOnRejection
+      role
+      revenue
+      values {
+        revenue
+        archived
+        preselected
+        hidden
+        name
+        id
+        order
+      }
+      conditions {
+        valueId
+        comparator
+        logic
+        referenceId
+      }
+      fieldType
+      hdPhotoHub
+      estated
+    }
+  }
+}
+
+query VendorRoles($vendorId: ID!) {
+  vendor(memberId: $vendorId) {
+    id
+    roles {
+      id
+      default
+      calendar
+      name
+      type
+      required
+      acknowledgeAssignment
+      permissions
+    }
+  }
+}
+
+mutation VendorRoleUpdate($roleId: ID!, $data: RoleUpdate!) {
+  updateRole(roleId: $roleId, data: $data) {
+    id
+  }
+}
+
+mutation VendorRoleCreate($vendorId: ID!, $data: RoleCreate!) {
+  createRole(memberId: $vendorId, data: $data) {
+    id
+  }
+}
+
+mutation VendorUpdate($vendorId: ID!, $data: VendorWrite!, $notifications: [NotificationConfigInput!]!) {
+  updateVendor(vendorId: $vendorId, data: $data) {
+    id
+  }
+  updateMemberNotifications(memberId: $vendorId, notifications: $notifications)
+}
+
+fragment VendorTask on Task {
+  id
+  name
+  shortName
+  expense
+  outputType
+  inputType
+  assignmentType
+  rules {
+    id
+    name
+  }
+  providers {
+    expense
+    id
+    overrideType
+    providerId
+    properties {
+      propertyId
+      expense
+      overrideType
+      propertyValueId
+    }
+  }
+  notifications {
+    __typename
+    type
+    message
+    global
+    enabled
+    method
+    ... on NotificationConfigEmail {
+      subject
+      attachments {
+        mime
+        name
+        url
+      }
+    }
+    ... on NotificationConfigSlack {
+      channel
+    }
+  }
+}
+
+query VendorTasks($vendorId: ID!) {
+  vendor(memberId: $vendorId) {
+    id
+    tasks {
+      id
+      name
+    }
+  }
+}
+
+query VendorTaskGet($taskId: ID!) {
+  task(taskId: $taskId) {
+    ...VendorTask
+  }
+}
+
+mutation VendorTaskUpdate($taskId: ID!, $data: TaskWrite!) {
+  updateTask(taskId: $taskId, data: $data) {
+    ...VendorTask
+  }
+}
+
+mutation VendorTaskCreate($vendorId: ID!, $data: TaskWrite!) {
+  createTask(vendorId: $vendorId, data: $data) {
+    ...VendorTask
+  }
+}
+
+fragment VendorDelivery on Delivery {
+  id
+  name
+  expense
+  notifications {
+    __typename
+    type
+    message
+    global
+    enabled
+    method
+    ... on NotificationConfigEmail {
+      subject
+      attachments {
+        mime
+        name
+        url
+      }
+    }
+    ... on NotificationConfigSlack {
+      channel
+    }
+  }
+  providers {
+    expense
+    id
+    overrideType
+    providerId
+    properties {
+      propertyId
+      expense
+      overrideType
+      propertyValueId
+    }
+  }
+}
+
+query VendorDeliveries($vendorId: ID!) {
+  vendor(memberId: $vendorId) {
+    id
+    deliveries {
+      id
+      name
+    }
+  }
+}
+
+query VendorDeliveryGet($deliveryId: ID!) {
+  delivery(deliveryId: $deliveryId) {
+    ...VendorDelivery
+  }
+}
+
+mutation VendorDeliveryUpdate($deliveryId: ID!, $data: DeliveryWrite!) {
+  updateDelivery(deliveryId: $deliveryId, data: $data) {
+    ...VendorDelivery
+  }
+}
+
+mutation VendorDeliveryCreate($vendorId: ID!, $data: DeliveryWrite!) {
+  createDelivery(vendorId: $vendorId, data: $data) {
+    ...VendorDelivery
+  }
+}
+
+fragment VendorField on Field {
+  apiName
+  conditions {
+    logic
+    comparator
+    referenceId
+    valueId
+  }
+  values {
+    id
+    name
+    hidden
+    archived
+    preselected
+    order
+    revenue
+    archived
+  }
+  group
+  hdPhotoHub
+  id
+  name
+  revenue
+  role
+  requiredOnCreate
+  showOnCreateOrder
+  showOnOrderList
+  showOnReschedule
+  showOnScheduleHover
+  fieldType
+  type: fieldType
+  required: requiredOnCreate
+}
+
+query VendorFields($vendorId: ID!) {
+  vendor(memberId: $vendorId) {
+    id
+    fields {
+      ...VendorField
+    }
+  }
+}
+
+query VendorWizardSupplemental($vendorId: ID!) {
+  vendor(memberId: $vendorId) {
+    id
+    performables(type: SERVICE) {
+      id
+      name
+      internalName
+      type
+      properties {
+        id
+        name
+      }
+    }
+  }
+}
+
+query VendorBuyerGroupTypes($vendorId: ID!) {
+  vendor(memberId: $vendorId) {
+    id
+    buyerGroupTypes {
+      id
+      name
+    }
+  }
+}
+
+query VendorGetBuyerGroupType($buyerGroupTypeId: ID!) {
+  buyerGroupType(buyerGroupTypeId: $buyerGroupTypeId) {
+    name
+  }
+}
+
+mutation VendorCreateBuyerGroupType($vendorId: ID!, $data: BuyerGroupTypeWrite!) {
+  createBuyerGroupType(memberId: $vendorId, data: $data) {
+    id
+    name
+  }
+}
+
+mutation VendorUpdateBuyerGroupType($buyerGroupTypeId: ID!, $data: BuyerGroupTypeWrite!) {
+  updateBuyerGroupType(buyerGroupTypeId: $buyerGroupTypeId, data: $data) {
+    id
+    name
+  }
+}
+
+mutation DisconnectGoogle($memberId: ID!) {
+  dissconnectGoogle(memberId: $memberId) {
+    id
+    calendarSyncEnabled
+    calendarSyncConfigured
+    __typename
+  }
+}

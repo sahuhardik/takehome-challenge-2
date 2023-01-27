@@ -1,0 +1,24 @@
+query BuyerOrders($buyerId: ID!, $from: DateTime!, $to: DateTime!, $status: [OrderStatus!]!) {
+  buyer(buyerId: $buyerId) {
+    id
+    algolia
+    filteredOrders(from: $from, to: $to, status: $status) {
+      id
+      revenue
+      status
+      source
+      created
+      address {
+        addressFirst
+      }
+    }
+    lastOrder {
+      id
+      created
+    }
+  }
+}
+
+mutation BuyerOrderDelete($orderId: ID!) {
+  deleteOrder(orderId: $orderId)
+}

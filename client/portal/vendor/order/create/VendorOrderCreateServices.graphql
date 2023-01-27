@@ -1,0 +1,18 @@
+query VendorOrderCreateServices($vendorId: ID!) {
+  vendor(memberId: $vendorId) {
+    id
+    services {
+      id
+      internalName
+      properties {
+        id
+        name
+        fieldType
+        values {
+          id
+          name
+        }
+      }
+    }
+  }
+}

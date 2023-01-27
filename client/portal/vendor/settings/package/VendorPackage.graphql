@@ -1,0 +1,42 @@
+fragment VendorPackage on Package {
+  id
+  name
+  performables {
+    id
+    name
+    group
+    performableId
+    fields {
+      ...FormFieldValue
+    }
+  }
+  conditions {
+    ...VendorCondition
+  }
+}
+
+query ListVendorPackages($vendorId: ID!) {
+  vendor(memberId: $vendorId) {
+    id
+    packages {
+      id
+      name
+    }
+  }
+}
+
+query GetVendorPackage($packageId: ID!) {
+  package(packageId: $packageId) {
+    ...VendorPackage
+  }
+}
+
+mutation SaveVendorPackage($data: PackageWrite!) {
+  savePackage(data: $data) {
+    ...VendorPackage
+  }
+}
+
+mutation RemoveVendorPackage($packageId: ID!) {
+  deletePackage(packageId: $packageId)
+}

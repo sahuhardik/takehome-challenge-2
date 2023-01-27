@@ -1,0 +1,88 @@
+fragment VendorInvoiceSource on CreditCard {
+  id
+  name
+  primary
+  brand
+  last4
+}
+
+fragment VendorInvoiceEdit on Invoice {
+  id
+  date
+  due
+  number
+  payerRelId
+  payments {
+    id
+    created
+    authorized
+    captured
+    notes
+    source {
+      id
+      name
+      primary
+    }
+  }
+  sources {
+    id
+    buyer {
+      id
+      member {
+        id
+        company
+      }
+    }
+    source {
+      ...VendorInvoiceSource
+    }
+  }
+  buyer {
+    id
+    member {
+      id
+      company
+    }
+    sources {
+      ...VendorInvoiceSource
+    }
+  }
+  lines {
+    id
+    amount
+    description
+  }
+  amount
+}
+
+query VendorAccountingInvoice($invoiceId: ID!) {
+  invoice(invoiceId: $invoiceId) {
+    ...VendorInvoiceEdit
+  }
+}
+
+mutation VendorInvoiceAddPaymentSource($invoiceId: ID!, $sourceId: ID!) {
+  addPaymentSourceToInvoice(invoiceId: $invoiceId, sourceId: $sourceId)
+}
+
+mutation VendorInvoiceRemovePaymentSource($invoiceId: ID!, $sourceId: ID!) {
+  removePaymentSourceFromInvoice(invoiceId: $invoiceId, sourceId: $sourceId)
+}
+
+mutation VendorUpdateInvoice($invoiceId: ID!, $data: InvoiceUpdate!) {
+  updateInvoice(invoiceId: $invoiceId, data: $data) {
+    ...VendorInvoiceEdit
+  }
+}
+
+mutation VendorInvoiceChargePayment($invoiceId: ID!, $data: ManualInvoicePayment!, $paymentSourceIds: [ID!]!) {
+  chargeInvoicePayment(invoiceId: $invoiceId, data: $data, paymentSourceIds: $paymentSourceIds) {
+    id
+  }
+}
+
+mutation VendorInvoiceAddPayment($invoiceId: ID!, $data: ManualInvoicePayment!) {
+  manualInvoicePayment(invoiceId: $invoiceId, data: $data) {
+    id
+  }
+}

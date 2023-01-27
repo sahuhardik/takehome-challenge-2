@@ -1,0 +1,41 @@
+fragment ProviderCalendarSettings on Member {
+  externalCalendars {
+    id
+    name
+    busy
+  }
+  writeCalendar {
+    id
+    name
+  }
+  calendarSyncEnabled
+  calendarSyncConfigured
+}
+
+query ProviderSettingsScheduling($memberId: ID!) {
+  member(memberId: $memberId) {
+    id
+    ...ProviderCalendarSettings
+  }
+}
+
+mutation ProviderSetCalendar($memberId: ID!, $calendarId: ID!) {
+  setCalendar(memberId: $memberId, calendarId: $calendarId) {
+    id
+    ...ProviderCalendarSettings
+  }
+}
+
+mutation ProviderDisconnectGoogle($memberId: ID!) {
+  dissconnectGoogle(memberId: $memberId) {
+    id
+    ...ProviderCalendarSettings
+  }
+}
+
+mutation ProviderSetBusyCalendar($calendarId: ID!, $busy: Boolean!) {
+  setBusyCalendar(calendarId: $calendarId, busy: $busy) {
+    id
+    ...ProviderCalendarSettings
+  }
+}

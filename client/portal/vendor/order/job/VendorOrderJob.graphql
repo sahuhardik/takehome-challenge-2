@@ -1,0 +1,223 @@
+fragment VendorJobStatus on Job {
+  id
+  stage
+  view
+  statusLabel
+  rejected
+  statusDescription(type: INTERNAL)
+  nextStatus(type: INTERNAL)
+}
+
+fragment VendorJobProperties on Job {
+  id
+  changes {
+    booleanValue
+    numberValue
+    textValue
+    fieldId
+    display
+  }
+  fields {
+    fieldId
+    display
+    booleanValue
+    textValue
+    numberValue
+    repeatValue {
+      name
+      value
+    }
+  }
+  performable {
+    __typename
+    id
+    internalName
+    inputType
+    properties {
+      ...ServiceConfigFormProperty
+      requiredSubmission
+    }
+    ... on Service {
+      variants {
+        ...ServiceConfigFormServiceVariant
+      }
+    }
+  }
+}
+
+query VendorJobDetail($jobId: ID!) {
+  orderJob(jobId: $jobId) {
+    lines {
+      id
+      manual
+    }
+    versionId
+    ...VendorJobStatus
+    ...VendorJobProperties
+    deliverables {
+      ...DeliverableItem
+      ...DeliverablePreview
+    }
+    buyerDeliverables {
+      id
+    }
+    attachments {
+      ...AttachmentDetails
+    }
+    order {
+      ...VendorOrderDetails
+      ...OrderRuleContext
+    }
+  }
+}
+
+query VendorJobAttachments($jobId: ID!) {
+  orderJob(jobId: $jobId) {
+    attachments {
+      ...AttachmentDetails
+    }
+  }
+}
+
+query VendorJobActivity($jobId: ID!) {
+  orderJob(jobId: $jobId) {
+    id
+    activity {
+      ...ActivityLog
+    }
+  }
+}
+
+fragment DeliverableItem on Deliverable {
+  __typename
+  id
+  type
+  status
+  rejected
+  micrositeStatus
+  fields {
+    title
+    display
+  }
+  ... on DeliverableImage {
+    preview
+    thumbnail
+    s3
+  }
+  ... on DeliverableVideo {
+    s3
+    mime
+    name
+    preview
+  }
+  ... on DeliverableLink {
+    link
+  }
+  ... on DeliverableText {
+    text
+  }
+  ... on DeliverablePdf {
+    s3
+    mime
+    name
+    preview
+  }
+}
+
+mutation VendorDeliverableApprove($deliverableId: ID!) {
+  approveDeliverable(deliverableId: $deliverableId) {
+    ...DeliverableItem
+  }
+}
+
+mutation VendorDeliverableReject($deliverableId: ID!, $fieldValues: [FieldValueWrite!]) {
+  rejectDeliverable(deliverableId: $deliverableId, fields: $fieldValues) {
+    ...DeliverableItem
+    job {
+      id
+      rejected
+    }
+  }
+}
+
+mutation VendorJobDelete($jobId: ID!) {
+  deleteJob(jobId: $jobId)
+}
+
+mutation VendorJobAccept($jobId: ID!) {
+  acceptChanges(jobId: $jobId) {
+    ...VendorJobStatus
+    ...VendorJobProperties
+  }
+}
+
+mutation VendorJobReject($jobId: ID!) {
+  rejectChanges(jobId: $jobId) {
+    ...VendorJobStatus
+    ...VendorJobProperties
+  }
+}
+
+mutation VendorJobUpdate($jobId: ID!, $data: JobWrite!, $versionId: Int!) {
+  updateJob(jobId: $jobId, data: $data, versionId: $versionId) {
+    id
+    versionId
+    ...VendorJobStatus
+    ...VendorJobProperties
+    order {
+      ...VendorOrderDetails
+      orderLines {
+        ...VendorOrderAccountingLine
+      }
+    }
+  }
+}
+
+mutation VendorJobSaveAttachment($jobId: ID!, $name: String!, $mime: String!, $s3: String!) {
+  saveJobAttachment(jobId: $jobId, name: $name, mime: $mime, s3: $s3) {
+    attachments {
+      __typename
+    }
+  }
+}
+
+mutation VendorDeleteDeliverable($deliverableId: ID!) {
+  deleteDeliverable(deliverableId: $deliverableId, force: true) {
+    id
+    job {
+      ...ProviderJobDeliverables
+    }
+  }
+}
+
+mutation VendorDeliverImage($jobId: ID!, $name: String!, $s3: String!, $mime: String!, $fields: [FieldValueWrite!]!) {
+  deliverImage(jobId: $jobId, name: $name, s3: $s3, fields: $fields, mime: $mime, pushToDestination: false) {
+    id
+    compressed
+    job {
+      ...ProviderJobDeliverables
+    }
+  }
+}
+
+mutation VendorDeliverVideo($jobId: ID!, $name: String!, $s3: String!, $mime: String!, $fields: [FieldValueWrite!]!) {
+  deliverVideo(jobId: $jobId, name: $name, s3: $s3, fields: $fields, mime: $mime) {
+    id
+    job {
+      ...ProviderJobDeliverables
+    }
+  }
+}
+
+mutation VendorDeliverPdf($jobId: ID!, $name: String!, $s3: String!, $mime: String!, $fields: [FieldValueWrite!]!) {
+  deliverPdf(jobId: $jobId, name: $name, s3: $s3, fields: $fields, mime: $mime) {
+    id
+    job {
+      ...ProviderJobDeliverables
+    }
+  }
+}
+
+mutation VendorDeliverToBuery($jobId: ID!) {
+  forceDeliverToBuyer(jobId: $jobId)
+}

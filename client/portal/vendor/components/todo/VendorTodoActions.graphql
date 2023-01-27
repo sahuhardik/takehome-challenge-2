@@ -1,0 +1,7 @@
+fragment VendorTodoActions on Job {
+  id
+  userId
+  removable
+  nextStatus(type: INTERNAL)
+  nextStatusLabel(type: INTERNAL)
+}

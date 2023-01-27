@@ -1,0 +1,107 @@
+fragment BuyerVendorField on Field {
+  ...DynamicField
+  required: requiredOnCreate
+  showOnSelfEdit
+  role
+}
+
+fragment BuyerCustomer on Buyer {
+  id
+  versionId
+  micrositeType
+  member {
+    id
+    type
+    parentId
+    buyerGroupTypeId
+    address {
+      line1
+      line2
+      longitude
+      latitude
+      state
+      city
+      postalCode
+    }
+    email
+    phone
+    company
+  }
+  rules {
+    id
+    name
+  }
+  blockedProviders {
+    id
+  }
+  exclusiveProviders {
+    id
+  }
+  fields {
+    ...FormFieldValue
+  }
+  performables {
+    id
+    performableId
+    expense
+    revenue
+    overrideType
+    properties {
+      propertyId
+      expense
+      revenue
+      overrideType
+      propertyValueId
+    }
+  }
+  users {
+    id
+    userId
+    roles {
+      id
+    }
+  }
+}
+
+query BuyerCustomerGet($buyerId: ID!) {
+  buyer(buyerId: $buyerId) {
+    ...BuyerCustomer
+  }
+}
+
+query BuyerVendorFields($vendorId: ID!) {
+  vendor(memberId: $vendorId) {
+    id
+    fields {
+      ...BuyerVendorField
+    }
+  }
+}
+
+query BuyerCustomerForm($vendorId: ID!) {
+  vendor(memberId: $vendorId) {
+    id
+    timezone
+    address {
+      longitude
+      latitude
+    }
+    roles {
+      id
+      name
+    }
+    buyerGroupTypes {
+      id
+      name
+    }
+    fields {
+      ...BuyerVendorField
+    }
+  }
+}
+
+mutation BuyerProfileUpdate($buyerRelId: ID!, $data: BuyerProfileUpdate!, $versionId: Int!) {
+  updateBuyerProfile(buyerId: $buyerRelId, data: $data, versionId: $versionId) {
+    ...BuyerCustomer
+  }
+}

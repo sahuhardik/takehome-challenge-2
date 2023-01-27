@@ -1,0 +1,36 @@
+query VendorCustomerForm($vendorId: ID!) {
+  vendor(memberId: $vendorId) {
+    id
+    timezone
+    address {
+      latitude
+      longitude
+    }
+    defaultRoles(roleType: BUYER) {
+      id
+      name
+    }
+    roles {
+      id
+      name
+      type
+      default
+    }
+    buyerGroupTypes {
+      id
+      name
+    }
+    fields {
+      ...VendorField
+    }
+  }
+}
+
+query UserContactsByIds($ids: [ID!]!) {
+  userByIds(userIds: $ids) {
+    id
+    email
+    phone
+    name
+  }
+}

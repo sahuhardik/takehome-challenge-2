@@ -1,0 +1,484 @@
+fragment ShopVendor on Vendor {
+  id
+  company
+  themeBackground
+  stripeAccountId
+  cartThanks
+  cartTerms
+  stripeTest
+  themeLogo {
+    id
+    image(width: 250, dpr: 1, height: 250, crop: false)
+  }
+  themePrimary
+  themeSecondary
+  fields(shop: true) {
+    group
+    id
+    name
+    fieldType
+    revenue
+    requiredOnCreate
+    conditions {
+      comparator
+      logic
+      referenceId
+      valueId
+    }
+    values {
+      id
+      name
+      revenue
+    }
+  }
+}
+query ShopVendorByDomain($domain: String!) {
+  vendorByDomain(domain: $domain) {
+    ...ShopVendor
+  }
+}
+mutation ShopSignup($vendorId: ID!, $data: BuyerSignup!) {
+  buyerSignup(vendorId: $vendorId, data: $data) {
+    id
+  }
+}
+
+fragment ShopWizard on Wizard {
+  id
+  pages {
+    id
+    caption
+    performableId
+    propertyId
+    order
+    conditions {
+      comparator
+      performableId
+      propertyId
+    }
+  }
+}
+fragment ShopMarketing on Marketing {
+  name
+  description
+  slimDescription
+  links {
+    id
+    label
+    role
+    url
+  }
+  videos {
+    id
+    role
+    thumbnail
+    streamId
+  }
+  images {
+    id
+    role
+    file {
+      id
+      s3
+    }
+    bg: custom(width: 1024, dpr: 2, height: 1024)
+    hero: custom(width: 1024, dpr: 2)
+    heroMobile: custom(width: 640, dpr: 2, height: 400)
+    thumbnail: custom(width: 200, dpr: 2, height: 100)
+  }
+}
+query ShopAdditional($vendorId: ID!) {
+  cartServices(vendorId: $vendorId) {
+    id
+    revenue
+    grouping
+    marketing {
+      name
+      slimDescription
+    }
+    cost {
+      min
+      max
+    }
+    properties(buyer: true) {
+      id
+    }
+  }
+}
+query ShopService($serviceId: ID!) {
+  service(id: $serviceId) {
+    id
+    name
+    revenue
+    variants {
+      ...ServiceConfigFormServiceVariant
+      revenue
+    }
+    properties(buyer: true) {
+      id
+      name
+      requiredCreation
+      requiredSubmission
+      fieldType
+      revenueType
+      revenue
+      pricingType
+      metadata
+      revenue
+      marketing {
+        name
+        description
+      }
+      values {
+        id
+        revenue
+        name
+        conditions {
+          comparator
+          logic
+          referenceId
+          value
+          valueId
+        }
+      }
+      conditions {
+        logic
+        comparator
+        referenceId
+        valueId
+      }
+    }
+    marketing {
+      ...ShopMarketing
+    }
+  }
+}
+query ShopAddOn($propertyId: ID!) {
+  performableProperty(propertyId: $propertyId) {
+    id
+    revenue
+    fieldType
+    ...ServiceConfigFormProperty
+    marketing {
+      ...ShopMarketing
+    }
+  }
+}
+mutation ShopRemoveService($jobId: ID!) {
+  deleteJob(jobId: $jobId)
+}
+mutation ShopUpdateService($versionId: Int!, $data: JobWrite!, $jobId: ID!) {
+  updateJob(versionId: $versionId, data: $data, jobId: $jobId) {
+    id
+    versionId
+  }
+}
+mutation ShowUpdateOrder($orderId: ID!, $data: OrderUpdate!, $versionId: Int!) {
+  updateOrder(orderId: $orderId, data: $data, versionId: $versionId) {
+    id
+    versionId
+  }
+}
+mutation ShopAddService($orderId: ID!, $data: OrderCreateService!) {
+  addJobsToOrder(orderId: $orderId, data: { requested: [], services: [$data] }) {
+    id
+    versionId
+    performableId
+  }
+}
+query ShopInvoice($orderId: ID!) {
+  order(orderId: $orderId) {
+    revenue
+    metadata(buyer: true) {
+      propertyId
+      title
+      display
+    }
+    address {
+      addressFirst
+      addressSecond
+      latitude
+      longitude
+    }
+    jobs {
+      id
+      versionId
+      performableId
+      performable {
+        id
+        marketing {
+          name
+        }
+      }
+      properties(valuable: true) {
+        propertyId
+        display
+        property {
+          marketing {
+            name
+          }
+        }
+      }
+      revenue
+    }
+  }
+}
+query ShopCart($orderId: ID!, $buyerRelId: ID!) {
+  buyer(buyerId: $buyerRelId) {
+    id
+    postPay
+    netTerms
+    sources {
+      id
+      name
+      brand
+      last4
+      primary
+    }
+  }
+  order(orderId: $orderId) {
+    id
+    revenue
+    metadata(buyer: true) {
+      propertyId
+      title
+      display
+    }
+    requested {
+      start
+      end
+    }
+    address {
+      addressFirst
+      addressSecond
+      latitude
+      longitude
+    }
+    orderLines {
+      id
+      description
+      jobId
+      actionId
+      providerId
+      amount
+      expense
+    }
+    jobs {
+      id
+      versionId
+      performableId
+      packagePerformableId
+      performable {
+        id
+        __typename
+        marketing {
+          name
+        }
+      }
+      properties(valuable: true) {
+        id
+        propertyId
+        display
+        property {
+          id
+          marketing {
+            name
+          }
+        }
+      }
+      revenue
+    }
+  }
+}
+mutation ShopOrderCreate($data: OrderCreate!) {
+  createOrder(data: $data) {
+    id
+    versionId
+    revenue
+    jobs {
+      id
+      performableId
+      packagePerformableId
+      revenue
+      versionId
+    }
+  }
+}
+mutation ShopOrderSubmit($orderId: ID!, $sourceIds: [ID!]) {
+  submitOrder(orderId: $orderId, sources: $sourceIds)
+}
+fragment BuyerCreateOrderWizard on Wizard {
+  id
+  name
+  default
+  fields {
+    fieldId
+    numberValue
+    textValue
+    booleanValue
+  }
+  pages {
+    id
+    caption
+    performableId
+    propertyId
+    order
+    conditions {
+      comparator
+      performableId
+      propertyId
+    }
+  }
+}
+
+fragment BuyerCreateOrderVendor on Vendor {
+  id
+  stripeAccountId
+  paymentType
+  cartThanks
+  cartTerms
+  stripeTest
+  paymentTest
+  rules {
+    ...VendorRule
+  }
+  timezoneDisplay
+  packages {
+    id
+    name
+    conditions {
+      ...VendorCondition
+    }
+  }
+  performables {
+    id
+    cartEnable
+    properties(buyer: true) {
+      ...PerformableConfigureFormProperties
+    }
+  }
+  fields(shop: true) {
+    group
+    id
+    name
+    type: fieldType
+    revenue
+    requiredOnCreate
+    conditions {
+      comparator
+      logic
+      referenceId
+      valueId
+    }
+    values {
+      id
+      hidden
+      archived
+      preselected
+      name
+      revenue
+    }
+  }
+  wizards {
+    ...BuyerCreateOrderWizard
+  }
+}
+
+query BuyerCreateOrderVendorGet($vendorId: ID!, $buyerId: ID!, $orderId: ID) {
+  buyer(buyerId: $buyerId) {
+    ...OrderRuleContextBuyerNested
+    postPay
+    netTerms
+    id
+    fields {
+      booleanValue
+      textValue
+      numberValue
+      repeatValue {
+        name
+        value
+      }
+      fieldId
+      field {
+        id
+        fieldType
+      }
+    }
+    lastOrder(orderId: $orderId, source: BUYER) {
+      id
+      versionId
+      fields {
+        fieldId
+        title
+        display
+        booleanValue
+        numberValue
+        repeatValue {
+          name
+          value
+        }
+        textValue
+      }
+      address {
+        addressFirst
+        addressSecond
+        line1
+        line2
+        longitude
+        latitude
+        state
+        city
+        postalCode
+      }
+      requested {
+        start
+        end
+      }
+      jobs(buyer: true) {
+        id
+        performableId
+        fields {
+          fieldId
+          repeatValue {
+            name
+            value
+          }
+          numberValue
+          textValue
+          booleanValue
+        }
+      }
+    }
+    sources {
+      id
+      primary
+    }
+    orderFields {
+      fieldId
+      booleanValue
+      numberValue
+      textValue
+    }
+  }
+  vendor(memberId: $vendorId) {
+    ...BuyerCreateOrderVendor
+  }
+  holidays {
+    id
+    name
+    date
+  }
+}
+
+query BuyerAddressDefaultFields($vendorId: ID!, $address: AddressInput!) {
+  addressDefaultFields(vendorId: $vendorId, address: $address) {
+    fieldId
+    numberValue
+    booleanValue
+    textValue
+    repeatValue {
+      name
+      value
+    }
+  }
+}

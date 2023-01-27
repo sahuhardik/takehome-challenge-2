@@ -1,0 +1,16 @@
+query RuleActionAssignProvider($vendorId: ID!) {
+  vendor(memberId: $vendorId) {
+    id
+    performables {
+      id
+      name
+    }
+    providers {
+      id
+      member {
+        id
+        company
+      }
+    }
+  }
+}

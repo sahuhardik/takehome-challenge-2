@@ -1,0 +1,475 @@
+mutation VendorOrderDelete($orderId: ID!) {
+  deleteOrder(orderId: $orderId)
+}
+
+mutation VendorCancelOrder($orderId: ID!) {
+  cancelOrder(orderId: $orderId) {
+    id
+    status
+    cancelable
+    removable
+  }
+}
+
+mutation VendorOrderAddTodo($name: String!, $orderId: ID!) {
+  createTodo(name: $name, orderId: $orderId) {
+    id
+    order {
+      ...VendorOrderStatus
+    }
+  }
+}
+
+mutation VendorJobForceComplete($jobId: ID!) {
+  forceComplete(jobId: $jobId) {
+    ...VendorJobDetails
+    order {
+      ...VendorOrderStatus
+    }
+  }
+}
+
+mutation VendorJobCancel($jobId: ID!) {
+  cancelJob(jobId: $jobId) {
+    ...VendorJobDetails
+    order {
+      ...VendorOrderStatus
+    }
+  }
+}
+
+mutation VendorJobAssign($jobId: ID!, $userId: ID!) {
+  assignJob(jobId: $jobId, userId: $userId) {
+    ...VendorJobDetails
+  }
+}
+
+mutation VendorJobClaim($jobId: ID!) {
+  claimJob(jobId: $jobId) {
+    ...VendorJobDetails
+  }
+}
+
+mutation VendorOrderComplete($orderId: ID!) {
+  completeOrder(orderId: $orderId) {
+    id
+    status
+    ...VendorOrderAccountingComponent
+  }
+}
+
+mutation VendorJobStatus($jobId: ID!, $status: JobStatus!) {
+  changeStatus(jobId: $jobId, status: $status) {
+    ...VendorJobDetails
+    order {
+      ...VendorOrderStatus
+    }
+  }
+}
+
+query CancelJobPreview($jobId: ID!) {
+  cancelJobPreview(jobId: $jobId) {
+    unscheduled
+    refund
+    notifyProvider
+    notifyAgent
+  }
+}
+
+query VendorOrderActivity($orderId: ID!) {
+  order(orderId: $orderId) {
+    id
+    activity {
+      ...ActivityLog
+    }
+  }
+}
+
+query VendorServices($vendorId: ID!) {
+  vendor(memberId: $vendorId) {
+    id
+    services {
+      id
+      sortOrder
+      name
+      internalName
+      properties {
+        id
+        name
+        archived
+        conditions {
+          logic
+          comparator
+          referenceId
+          valueId
+        }
+        values {
+          id
+          name
+          archived
+        }
+        requiredCreation
+        fieldType
+      }
+    }
+  }
+}
+
+query VendorOrderServices($vendorId: ID!) {
+  vendor(memberId: $vendorId) {
+    id
+    algolia
+    fields {
+      id
+      name
+      fieldType
+    }
+    services {
+      id
+      internalName
+      properties {
+        id
+        name
+        metadata
+        requiredCreation
+        fieldType
+        conditions {
+          logic
+          comparator
+          referenceId
+          valueId
+        }
+        values {
+          id
+          name
+        }
+      }
+    }
+  }
+}
+
+query VendorOrderSchedule($vendorId: ID!, $buyerId: ID!) {
+  vendor(memberId: $vendorId) {
+    id
+    services {
+      id
+      internalName
+      shortName
+      schedulable
+    }
+    fields {
+      id
+      name
+      showOnScheduleHover
+    }
+    providers {
+      id
+      memberId
+      member {
+        id
+        company
+        address {
+          latitude
+          longitude
+        }
+      }
+      color
+      performables {
+        id
+        performableId
+      }
+    }
+  }
+  buyer(buyerId: $buyerId) {
+    ...VendorScheduleBuyerModel
+  }
+}
+
+mutation VendorOrderCreate($data: OrderCreate!) {
+  createOrder(data: $data) {
+    id
+    versionId
+  }
+}
+
+mutation VendorOrderUpdate($orderId: ID!, $data: OrderUpdate!, $versionId: Int!) {
+  updateOrder(orderId: $orderId, data: $data, versionId: $versionId) {
+    id
+    versionId
+    ...OrderFieldsComponent
+    requested {
+      start
+      end
+    }
+    orderLines {
+      ...VendorOrderViewLines
+    }
+  }
+}
+
+mutation VendorOrderAddService($orderId: ID!, $data: OrderAddJob!) {
+  addJobsToOrder(orderId: $orderId, data: $data) {
+    id
+    onsite
+    versionId
+    order {
+      id
+      orderLines {
+        ...VendorOrderViewLines
+      }
+      ...VendorOrderStatus
+      ...VendorOrderJobList
+    }
+  }
+}
+
+query VendorOrderCreateDetails($vendorId: ID!) {
+  vendor(memberId: $vendorId) {
+    id
+    fields(role: ORDER) {
+      ...ComponentOrderFields
+    }
+    rules {
+      ...VendorRule
+    }
+  }
+}
+
+mutation VendorOrderConfirm($orderId: ID!, $requestedInput: ConfirmOrderRequested) {
+  confirmOrder(orderId: $orderId, requestedInput: $requestedInput) {
+    id
+    quote
+    status
+    orderLines {
+      ...VendorOrderViewLines
+    }
+    ...VendorOrderJobList
+  }
+}
+
+mutation VendorOrderSubmit($orderId: ID!, $schedule: [ScheduleUpdate!], $confirm: Boolean!, $quote: Boolean!) {
+  submitOrder(orderId: $orderId, updates: $schedule, confirm: $confirm, quote: $quote)
+}
+
+query VendorOrderReview($orderId: ID!) {
+  order(orderId: $orderId) {
+    id
+    revenue
+    expense
+    orderLines {
+      id
+      amount
+      expense
+      jobId
+    }
+    jobs {
+      id
+      revenue
+      expense
+      onsite
+      performable {
+        id
+        type
+        name
+        onsite
+      }
+      properties(valuable: true) {
+        id
+        display
+        property {
+          id
+          name
+        }
+      }
+    }
+    buyer {
+      id
+      member {
+        id
+        company
+      }
+    }
+    requested {
+      start
+      end
+    }
+    metadata {
+      propertyId
+      title
+      display
+    }
+    address {
+      state
+      longitude
+      latitude
+      city
+      line1
+      postalCode
+      line2
+      addressFirst
+      addressSecond
+    }
+  }
+}
+
+mutation VendorOrderHold($orderId: ID!) {
+  holdOrder(orderId: $orderId) {
+    id
+    hold
+    activity {
+      ...ActivityLog
+    }
+  }
+}
+
+mutation VendorOrderRemoveHold($orderId: ID!) {
+  removeOrderHold(orderId: $orderId) {
+    id
+    hold
+    activity {
+      ...ActivityLog
+    }
+  }
+}
+
+fragment VendorOrderViewLines on OrderLine {
+  id
+  amount
+  expense
+  editable
+  jobId
+  providerId
+  job {
+    id
+    performable {
+      id
+      internalName
+    }
+  }
+  removable
+  description
+  transient
+}
+
+mutation VendorOrderLineDelete($lineId: ID!) {
+  deleteOrderLine(lineId: $lineId)
+}
+
+mutation VendorOrderLineUpdate($lineId: ID!, $data: OrderLineWrite!) {
+  updateOrderLine(lineId: $lineId, data: $data) {
+    ...VendorOrderViewLines
+    invoice {
+      id
+      order {
+        ...VendorOrderAccountingPayments
+      }
+    }
+  }
+}
+
+mutation VendorOrderLineCreate($orderId: ID!, $data: OrderLineWrite!) {
+  addInvoiceLine(orderId: $orderId, data: $data) {
+    id
+    invoice {
+      id
+      order {
+        ...VendorOrderAccountingPayments
+      }
+    }
+  }
+}
+
+fragment VendorOrderStatus on Order {
+  id
+  fullyPaid
+  eligibleToCompleteJobs
+  unpaidBalance
+  cancelable
+  removable
+  canHold
+  status
+}
+
+query VendorOrderAttachments($orderId: ID!) {
+  order(orderId: $orderId) {
+    attachments {
+      ...AttachmentDetails
+    }
+  }
+}
+
+query VendorAttachmentDownload($s3Url: String!) {
+  vendorAttachmentDownload(s3Url: $s3Url)
+}
+
+query VendorOrderView($orderId: ID!, $vendorId: ID!) {
+  vendor(memberId: $vendorId) {
+    id
+    fields {
+      ...ComponentOrderFields
+    }
+  }
+  order(orderId: $orderId) {
+    ...OrderFieldsComponent
+    id
+    vendorId
+    canHold
+    quote
+    attachments {
+      ...AttachmentDetails
+    }
+    versionId
+    ...VendorOrderStatus
+    hold
+    revenue
+    expense
+    requested {
+      start
+      end
+    }
+    orderLines {
+      ...VendorOrderViewLines
+    }
+    buyer {
+      id
+      member {
+        id
+        company
+        uniqueRoleType(roleType: BUYER, vendorId: $vendorId)
+      }
+    }
+  }
+}
+
+query VendorOrderInvoice($orderId: ID!) {
+  order(orderId: $orderId) {
+    id
+    orderLines {
+      id
+      description
+      expense
+      amount
+      removable
+      provider {
+        id
+        company
+      }
+      editable
+      job {
+        id
+        performable {
+          id
+          internalName
+        }
+      }
+    }
+  }
+}
+
+mutation VendorOrderSaveAttachment($orderId: ID!, $name: String!, $mime: String!, $s3: String!) {
+  saveOrderAttachment(orderId: $orderId, name: $name, mime: $mime, s3: $s3) {
+    attachments {
+      __typename
+    }
+  }
+}

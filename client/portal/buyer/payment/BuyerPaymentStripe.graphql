@@ -1,0 +1,20 @@
+query BuyerPaymentStripe($vendorId: ID!) {
+  vendor(memberId: $vendorId) {
+    id
+    stripeTest
+    stripeAccountId
+    stripePublicKey
+  }
+}
+
+mutation BuyerPaymentStripeAdd($buyerRelId: ID!, $name: String!, $default: Boolean!, $sourceToken: String!) {
+  addPaymentSource(
+    buyerRelId: $buyerRelId
+    sourceToken: $sourceToken
+    sourceType: "card"
+    name: $name
+    setDefault: $default
+  ) {
+    id
+  }
+}

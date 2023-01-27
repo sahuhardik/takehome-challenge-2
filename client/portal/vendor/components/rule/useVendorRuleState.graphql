@@ -1,0 +1,5 @@
+query VendorRuleGet($ruleId: ID!) {
+  rule(ruleId: $ruleId) {
+    ...VendorRule
+  }
+}

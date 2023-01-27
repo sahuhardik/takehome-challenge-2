@@ -1,0 +1,11 @@
+query VendorCustomerTodos($buyerRelId: ID!) {
+  buyer(buyerId: $buyerRelId) {
+    id
+    vendorId
+    todos {
+      ...VendorTodoActions
+      name
+      stage
+    }
+  }
+}

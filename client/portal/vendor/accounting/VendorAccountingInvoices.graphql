@@ -1,0 +1,34 @@
+query VendorAccountingInvoices($vendorId: ID!) {
+  invoices(vendorId: $vendorId) {
+    id
+    amount
+    buyer {
+      id
+      member {
+        id
+        company
+      }
+    }
+    lines {
+      id
+      amount
+      description
+    }
+    status
+    date
+    due
+  }
+}
+
+mutation VendorCreateInvoice($invoice: InvoiceCreate!) {
+  createInvoice(invoice: $invoice) {
+    id
+  }
+}
+
+mutation VendorVoidInvoice($invoiceId: ID!) {
+  voidInvoice(invoiceId: $invoiceId) {
+    id
+    status
+  }
+}

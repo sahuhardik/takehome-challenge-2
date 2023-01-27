@@ -1,0 +1,80 @@
+fragment VendorOrderDetails on Order {
+  vendorId
+  id
+  micrositeType
+  created
+  micrositeStatus
+  micrositePublicUrl
+  micrositePreviewUrl
+  micrositeAuthenticatedUrl
+  address {
+    addressFirst
+    addressSecond
+  }
+  invoice {
+    id
+    url
+  }
+  buyer {
+    id
+    member {
+      id
+      phone
+      email
+      company
+      users {
+        id
+        roles {
+          id
+          name
+        }
+        user {
+          id
+          email
+          phone
+          name
+        }
+      }
+    }
+    buyerFields: fields(valuable: true) {
+      fieldId
+      title
+      display
+      booleanValue
+      numberValue
+      repeatValue {
+        name
+        value
+      }
+      textValue
+    }
+  }
+  requested {
+    start
+    end
+  }
+  fields {
+    fieldId
+    title
+    display
+    booleanValue
+    numberValue
+    repeatValue {
+      name
+      value
+    }
+    textValue
+  }
+  contacts {
+    first
+    last
+    email
+    phone
+  }
+}
+
+query VendorOrderDetailsComponent($orderId: ID!) {
+  order(orderId: $orderId) {
+    ...VendorOrderDetails
+  }
+}

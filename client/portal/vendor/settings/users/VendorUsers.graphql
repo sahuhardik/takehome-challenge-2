@@ -1,0 +1,42 @@
+mutation VendorInternalUserAssign($vendorId: ID!, $roleIds: [ID!]!, $userId: ID!) {
+  assignMemberUser(memberId: $vendorId, roleIds: $roleIds, userId: $userId) {
+    id
+  }
+}
+
+mutation VendorInternalUserUpdate($vendorId: ID!, $userId: ID!, $data: UserWithPasswordWrite!) {
+  updateMemberUser(memberId: $vendorId, userId: $userId, data: $data) {
+    id
+  }
+}
+
+mutation VendorInternalUserDelete($vendorId: ID!, $userId: ID!) {
+  deleteMemberUser(memberId: $vendorId, userId: $userId)
+}
+
+query VendorInternalUserList($vendorId: ID!) {
+  vendor(memberId: $vendorId) {
+    id
+    timezone
+    roles {
+      id
+      name
+      type
+      default
+    }
+    users {
+      id
+      user {
+        id
+        first
+        last
+        email
+        phone
+        dateOfBirth
+        ownByMyself
+        ownerMemberId
+        roleIds
+      }
+    }
+  }
+}

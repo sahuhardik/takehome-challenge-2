@@ -1,0 +1,6 @@
+query VendorOrderCreateCustomer($vendorId: ID!) {
+  vendor(memberId: $vendorId) {
+    id
+    algolia
+  }
+}

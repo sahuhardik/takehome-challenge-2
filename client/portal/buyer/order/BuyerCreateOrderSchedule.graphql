@@ -1,0 +1,14 @@
+query BuyerCreateOrderSchedule($vendorMemberId: ID!) {
+  holidays {
+    id
+    name
+    date
+  }
+  vendor(memberId: $vendorMemberId) {
+    id
+    requireRequestTimes
+    rules {
+      ...VendorRule
+    }
+  }
+}

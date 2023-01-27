@@ -1,0 +1,50 @@
+query BuyerCreateOrderPackages($buyerRelId: ID!) {
+  buyer(buyerId: $buyerRelId) {
+    id
+    lastOrder {
+      id
+    }
+    vendor {
+      id
+      defaultWizard {
+        id
+      }
+      packages {
+        id
+        name
+        revenue
+        conditions {
+          ...VendorCondition
+        }
+        performables {
+          id
+          name
+          revenue
+          group
+          fields {
+            fieldId
+            title
+            display
+            shouldDisplay
+          }
+          performable {
+            id
+            name
+            marketing {
+              id
+              name
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+mutation BuyerAddPackageToOrder($orderId: ID!, $data: OrderAddPackage!) {
+  addPackageToOrder(data: $data, orderId: $orderId) {
+    id
+    performableId
+    packagePerformableId
+  }
+}

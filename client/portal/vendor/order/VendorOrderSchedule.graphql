@@ -1,0 +1,13 @@
+query VendorOrderScheduleJob($jobId: ID!) {
+  orderJob(jobId: $jobId) {
+    ...VendorScheduleModel
+  }
+}
+
+query VendorOrderScheduleVersion($vendorId: ID!) {
+  vendor(memberId: $vendorId) {
+    id
+    calendarVersion
+    requestTimesError
+  }
+}

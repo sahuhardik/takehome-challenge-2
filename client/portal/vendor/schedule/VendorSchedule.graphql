@@ -1,0 +1,214 @@
+fragment VendorScheduleBuyerModel on Buyer {
+  id
+  member {
+    id
+    company
+  }
+  blockedProviders {
+    id
+    memberId
+  }
+  exclusiveProviders {
+    id
+    memberId
+  }
+}
+
+fragment VendorScheduleModel on Job {
+  id
+  assigneeId
+  start
+  locked
+  status
+  stage
+  stageName
+  notifyBuyer
+  notifyAssignee
+  order {
+    id
+    status
+    invoiceable
+    fullyPaid
+    buyer {
+      ...VendorScheduleBuyerModel
+    }
+    metadata {
+      propertyId
+      display
+    }
+    requested {
+      start
+      end
+    }
+    address {
+      longitude
+      latitude
+      addressFirst
+      addressSecond
+      line1
+    }
+  }
+  fields(valuable: true) {
+    fieldId
+    shortName
+  }
+  performable {
+    id
+    shortName
+    onsite
+    internalName
+  }
+  eventId
+  onsite
+}
+
+mutation VendorScheduleUpdate($vendorId: ID!, $updates: [ScheduleUpdate!]!, $version: Int!) {
+  schedule(vendorId: $vendorId, updates: $updates, version: $version) {
+    jobs {
+      id
+    }
+  }
+}
+
+query VendorScheduleUnscheduled($vendorId: ID!) {
+  vendor(memberId: $vendorId) {
+    id
+    jobsUnscheduled {
+      ...VendorScheduleModel
+    }
+  }
+}
+
+query VendorScheduleVersion($vendorId: ID!) {
+  vendor(memberId: $vendorId) {
+    id
+    calendarVersion
+  }
+}
+
+query VendorScheduledQuery($vendorId: ID!, $start: DateTime!, $end: DateTime!) {
+  vendor(memberId: $vendorId) {
+    id
+    calendarVersion
+    requestTimesError
+    jobsScheduled(start: $start, end: $end) {
+      ...VendorScheduleModel
+    }
+  }
+}
+
+query VendorScheduleFields($vendorId: ID!) {
+  vendor(memberId: $vendorId) {
+    id
+    fields {
+      id
+      name
+      showOnScheduleHover
+    }
+  }
+}
+
+query VendorScheduleProviders($vendorId: ID!, $start: DateTime!, $end: DateTime!) {
+  vendor(memberId: $vendorId) {
+    id
+    showCalendarTitles
+    businessHours {
+      hours {
+        from {
+          hour
+          minute
+        }
+        to {
+          hour
+          minute
+        }
+      }
+    }
+    providers {
+      id
+      memberId
+      color
+      sort
+      balance
+      busy(start: $start, end: $end) {
+        id
+        start
+        end
+        address {
+          line1
+          city
+        }
+        title
+      }
+      member {
+        id
+        company
+        address {
+          longitude
+          latitude
+        }
+      }
+      performables {
+        id
+        performableId
+      }
+      users {
+        user {
+          name
+          dateOfBirth
+        }
+      }
+      businessHours {
+        hours {
+          from {
+            hour
+            minute
+          }
+          to {
+            hour
+            minute
+          }
+        }
+      }
+    }
+  }
+}
+
+query VendorSchedulePage($vendorId: ID!, $start: DateTime!, $end: DateTime!) {
+  vendor(memberId: $vendorId) {
+    id
+    fields {
+      id
+      name
+      showOnScheduleHover
+    }
+    providers {
+      id
+      memberId
+      color
+      busy(start: $start, end: $end) {
+        id
+        start
+        end
+      }
+      member {
+        id
+        company
+        address {
+          longitude
+          latitude
+        }
+      }
+      performables {
+        id
+        performableId
+      }
+      users {
+        user {
+          name
+          dateOfBirth
+        }
+      }
+    }
+  }
+}

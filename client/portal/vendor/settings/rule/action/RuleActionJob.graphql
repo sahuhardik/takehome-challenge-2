@@ -1,0 +1,21 @@
+query RuleActionPerformable($vendorId: ID!) {
+  vendor(memberId: $vendorId) {
+    id
+    performables(archived: true) {
+      id
+      name
+      internalName
+      properties {
+        id
+        archived
+        name
+        fieldType
+        values {
+          archived
+          id
+          name
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,36 @@
+query VendorAccountingPayouts($vendorId: ID!) {
+  vendor(memberId: $vendorId) {
+    id
+    payouts {
+      id
+      amount
+      monthToDate
+      yearToDate
+      start
+      end
+      provider {
+        id
+        member {
+          id
+          company
+        }
+      }
+    }
+  }
+}
+
+mutation VendorAccountingCreatePayout($vendorId: ID!, $start: DateTime!, $end: DateTime!) {
+  createPayout(vendorId: $vendorId, start: $start, end: $end) {
+    id
+    amount
+    start
+    end
+    provider {
+      id
+      member {
+        id
+        company
+      }
+    }
+  }
+}

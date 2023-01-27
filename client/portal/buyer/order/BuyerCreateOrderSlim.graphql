@@ -1,0 +1,30 @@
+query BuyerCreateOrderSlim($buyerRelId: ID!, $vendorId: ID!) {
+  buyer(buyerId: $buyerRelId) {
+    id
+    lastOrder {
+      id
+      jobs {
+        id
+        performableId
+      }
+    }
+  }
+  cartServices(vendorId: $vendorId) {
+    id
+    sortOrder
+    revenue
+    grouping
+    marketing {
+      name
+      slimDescription
+      description
+    }
+    cost {
+      min
+      max
+    }
+    properties(buyer: true) {
+      id
+    }
+  }
+}

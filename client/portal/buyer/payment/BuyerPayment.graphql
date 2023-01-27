@@ -1,0 +1,13 @@
+query BuyerInvoices($buyerRelId: ID!) {
+  buyer(buyerId: $buyerRelId) {
+    id
+    invoices {
+      id
+      number
+      amount
+      status
+      due
+      pdf
+    }
+  }
+}

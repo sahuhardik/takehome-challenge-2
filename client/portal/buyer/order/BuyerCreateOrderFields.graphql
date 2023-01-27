@@ -1,0 +1,25 @@
+query BuyerCreateOrderFields($buyerRelId: ID!, $orderId: ID) {
+  buyer(buyerId: $buyerRelId) {
+    id
+    vendor {
+      id
+      defaultWizard {
+        id
+      }
+      packages {
+        id
+        name
+        conditions {
+          ...VendorCondition
+        }
+      }
+    }
+    lastOrder(orderId: $orderId) {
+      id
+      jobs {
+        id
+        performableId
+      }
+    }
+  }
+}

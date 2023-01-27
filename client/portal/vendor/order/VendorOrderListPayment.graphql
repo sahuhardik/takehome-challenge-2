@@ -1,0 +1,31 @@
+query VendorOrderListPayment($vendorId: ID!) {
+  vendor(memberId: $vendorId) {
+    id
+    orders(filter: PAYMENT) {
+      id
+      created
+      completed
+      revenue
+      address {
+        line1
+        longitude
+        latitude
+        addressFirst
+        addressSecond
+        city
+        state
+      }
+      invoice {
+        id
+        url
+      }
+      buyer {
+        id
+        member {
+          id
+          company
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,397 @@
+fragment ProviderJobChanges on Job {
+  id
+  user {
+    id
+    name
+  }
+  stage
+  view
+  status
+  statusLabel
+  statusDescription(type: PROVIDER)
+  nextStatus(type: PROVIDER)
+  nextStatusLabel(type: PROVIDER)
+}
+
+fragment ProviderJobDetail on Job {
+  ...ProviderJobChanges
+  attachments {
+    ...AttachmentDetails
+  }
+  fields {
+    booleanValue
+    fieldId
+    display
+    title
+    numberValue
+    repeatValue {
+      name
+      value
+    }
+    textValue
+  }
+  root {
+    id
+    performable {
+      id
+      name
+      internalName
+    }
+    fields(changes: true, valuable: true) {
+      fieldId
+      booleanValue
+      display
+      title
+    }
+  }
+  performable {
+    id
+    __typename
+    inputType
+    internalName
+    name
+    properties {
+      ...ServiceConfigFormProperty
+      requiredSubmission
+      allowChange
+    }
+    ... on Service {
+      variants {
+        ...ServiceConfigFormServiceVariant
+      }
+    }
+  }
+  order {
+    ...VendorOrderDetails
+    vendorId
+  }
+}
+
+query ProviderJobDetailGet($jobId: ID!) {
+  orderJob(jobId: $jobId) {
+    ...ProviderJobDetail
+    order {
+      ...OrderRuleContext
+    }
+  }
+}
+
+mutation ProviderJobClaim($jobId: ID!) {
+  claimJob(jobId: $jobId) {
+    ...ProviderJobChanges
+  }
+}
+
+mutation ProviderJobStatus($jobId: ID!, $status: JobStatus!) {
+  changeStatus(jobId: $jobId, status: $status) {
+    ...ProviderJobChanges
+  }
+}
+
+fragment ProviderJobDeliverables on Job {
+  id
+  deliverables {
+    ...DeliverablePreview
+  }
+}
+
+query ProviderJobDeliverablesGet($jobId: ID!) {
+  job: orderJob(jobId: $jobId) {
+    ...ProviderJobDeliverables
+  }
+}
+
+query ProviderJobInputs($jobId: ID!) {
+  job: orderJob(jobId: $jobId) {
+    id
+    attachments {
+      ...AttachmentDetails
+    }
+    inputs {
+      ...DeliverablePreview
+    }
+  }
+}
+
+mutation ProviderProgressWebAppointment($eventId: ID!) {
+  progressAppointment(eventId: $eventId) {
+    ...ProviderWebAppointment
+  }
+}
+
+mutation ProviderDeliverImage(
+  $jobId: ID!
+  $name: String!
+  $s3: String!
+  $mime: String!
+  $fields: [FieldValueWrite!]!
+  $deliverableId: ID
+) {
+  deliverImage(jobId: $jobId, name: $name, s3: $s3, fields: $fields, mime: $mime, deliverableId: $deliverableId) {
+    id
+    compressed
+    job {
+      ...ProviderJobDeliverables
+    }
+  }
+}
+
+mutation ProviderDeliverVideo($jobId: ID!, $name: String!, $s3: String!, $mime: String!, $fields: [FieldValueWrite!]!) {
+  deliverVideo(jobId: $jobId, name: $name, s3: $s3, fields: $fields, mime: $mime) {
+    id
+    job {
+      ...ProviderJobDeliverables
+    }
+  }
+}
+
+mutation ProviderDeliverPdf($jobId: ID!, $name: String!, $s3: String!, $mime: String!, $fields: [FieldValueWrite!]!) {
+  deliverPdf(jobId: $jobId, name: $name, s3: $s3, fields: $fields, mime: $mime) {
+    id
+    job {
+      ...ProviderJobDeliverables
+    }
+  }
+}
+
+mutation ProviderDeliverText($jobId: ID!, $deliverableId: ID, $text: String!, $fields: [FieldValueWrite!]!) {
+  deliverText(jobId: $jobId, deliverableId: $deliverableId, text: $text, fields: $fields) {
+    id
+    job {
+      ...ProviderJobDeliverables
+    }
+  }
+}
+
+mutation ProviderDeleteDeliverable($deliverableId: ID!) {
+  deleteDeliverable(deliverableId: $deliverableId) {
+    id
+    job {
+      ...ProviderJobDeliverables
+    }
+  }
+}
+
+mutation ProviderJobSubmit($jobId: ID!, $changes: [FieldValueWrite!]!) {
+  jobSubmit(jobId: $jobId, changes: $changes) {
+    ...ProviderJobChanges
+  }
+}
+
+mutation ProviderDeliverLink($jobId: ID!, $fields: [FieldValueWrite!]!, $deliverableId: ID, $link: String!) {
+  deliverLink(jobId: $jobId, fields: $fields, deliverableId: $deliverableId, link: $link) {
+    id
+    job {
+      ...ProviderJobDeliverables
+    }
+  }
+}
+
+mutation ProviderDeliverMatterport(
+  $jobId: ID!
+  $fields: [FieldValueWrite!]!
+  $deliverableId: ID
+  $brandedUrl: String!
+  $unbrandedUrl: String!
+) {
+  deliverMatterport(
+    jobId: $jobId
+    fields: $fields
+    deliverableId: $deliverableId
+    brandedUrl: $brandedUrl
+    unbrandedUrl: $unbrandedUrl
+  ) {
+    id
+    job {
+      ...ProviderJobDeliverables
+    }
+  }
+}
+
+query ProviderAccount($providerMemberId: ID!) {
+  provider: providerMember(id: $providerMemberId) {
+    id
+    company
+  }
+}
+
+query ProviderCounts($providerMemberId: ID!) {
+  providerMember(id: $providerMemberId) {
+    id
+    unclaimedAppointmentsCount
+    jobsAwaitingCount
+  }
+}
+
+fragment ProviderJobsJob on Job {
+  id
+  ...JobBadge
+  status
+  user {
+    id
+    name
+  }
+  order {
+    id
+    address {
+      addressFirst
+      addressSecond
+    }
+    buyer {
+      id
+      member {
+        id
+        company
+      }
+    }
+  }
+  root {
+    id
+    fields {
+      shouldDisplay
+      fieldId
+      display
+      title
+    }
+  }
+  performable {
+    id
+    name
+  }
+}
+
+query ProviderJobs($providerId: ID!) {
+  provider: providerMember(id: $providerId) {
+    id
+    canClaimJobs
+    jobsFuture {
+      ...ProviderJobsJob
+    }
+    jobsAwaiting {
+      ...ProviderJobsJob
+    }
+  }
+}
+
+fragment AppointmentDeliverableItem on Deliverable {
+  __typename
+  id
+  type
+  status
+  rejected
+  ... on DeliverableImage {
+    preview
+    thumbnail
+  }
+  ... on DeliverableVideo {
+    s3
+    mime
+    name
+    preview
+  }
+  ... on DeliverableLink {
+    link
+  }
+  ... on DeliverableText {
+    text
+  }
+}
+
+fragment ProviderWebAppointmentJob on Job {
+  id
+  performable {
+    id
+    shortName
+    name
+  }
+  deliverables {
+    ...AppointmentDeliverableItem
+  }
+}
+
+fragment ProviderWebAppointment on Appointment {
+  eventId
+  start
+  end
+  status
+  orderId
+  order {
+    id
+    address {
+      line1
+    }
+    buyer {
+      id
+      member {
+        id
+        company
+      }
+    }
+  }
+  jobs {
+    id
+    performable {
+      id
+      shortName
+    }
+  }
+  title
+}
+
+fragment ProviderWebAppointmentSlidebar on Appointment {
+  ...ProviderWebAppointment
+  status
+  status
+  progressLabel
+  progressible
+  order {
+    id
+    address {
+      latitude
+      longitude
+      addressFirst
+      addressSecond
+    }
+    metadata {
+      propertyId
+      title
+      display
+    }
+  }
+  jobs {
+    ...ProviderWebAppointmentJob
+    properties {
+      id
+      property {
+        id
+        name
+      }
+      display
+    }
+    children {
+      ...ProviderWebAppointmentJob
+    }
+    status
+    statusLabel
+    nextStatus(type: PROVIDER)
+    nextStatusLabel(type: PROVIDER)
+  }
+}
+
+query ProviderAppintmentDetail($eventId: ID!) {
+  appointment(eventId: $eventId) {
+    ...ProviderWebAppointmentSlidebar
+  }
+}
+
+query ProviderSchedule($memberId: ID!, $start: DateTime!, $end: DateTime!) {
+  appointments(providerMemberId: $memberId, start: $start, end: $end) {
+    ...ProviderWebAppointment
+  }
+  providerMember(id: $memberId) {
+    id
+    unclaimedAppointments {
+      ...ProviderWebAppointment
+    }
+  }
+}

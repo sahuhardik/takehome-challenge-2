@@ -1,0 +1,14 @@
+query JobGallery($jobId: ID!) {
+  orderJob(jobId: $jobId) {
+    buyerCanDownload
+    order {
+      id
+      buyer {
+        id
+      }
+    }
+    buyerDeliverables {
+      ...DeliverablePreview
+    }
+  }
+}

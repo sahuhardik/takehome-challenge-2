@@ -1,0 +1,26 @@
+query VendorOrderListCompleted($vendorId: ID!) {
+  vendor(memberId: $vendorId) {
+    id
+    orders(filter: COMPLETE) {
+      id
+      created
+      completed
+      address {
+        line1
+        longitude
+        latitude
+        addressFirst
+        addressSecond
+        city
+        state
+      }
+      buyer {
+        id
+        member {
+          id
+          company
+        }
+      }
+    }
+  }
+}
