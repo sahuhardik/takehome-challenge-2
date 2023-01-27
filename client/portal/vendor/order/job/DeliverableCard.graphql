@@ -1,9 +1,0 @@
-query DeliverableCard($vendorId: ID!) {
-  vendor(memberId: $vendorId) {
-    id
-    fields {
-      id
-      role
-    }
-  }
-}

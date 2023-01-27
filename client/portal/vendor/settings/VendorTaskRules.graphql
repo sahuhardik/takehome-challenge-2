@@ -1,9 +1,0 @@
-query VendorTaskRules($taskId: ID!) {
-  task(taskId: $taskId) {
-    id
-    rules {
-      id
-      name
-    }
-  }
-}

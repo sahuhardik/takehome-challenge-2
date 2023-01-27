@@ -1,9 +1,0 @@
-query RuleActionFieldShow($vendorId: ID!) {
-  vendor(memberId: $vendorId) {
-    id
-    fields {
-      id
-      name
-    }
-  }
-}

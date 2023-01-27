@@ -1,5 +1,0 @@
-query VendorOrderAddServiceOrder($orderId: ID!) {
-  order(orderId: $orderId) {
-    ...OrderRuleContext
-  }
-}

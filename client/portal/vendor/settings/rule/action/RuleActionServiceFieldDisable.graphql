@@ -1,5 +1,0 @@
-query RuleActionServiceFieldDisable($fieldId: ID!) {
-  field(fieldId: $fieldId) {
-    id
-  }
-}

@@ -1,8 +1,0 @@
-query VendorCustomerRulesRefresh($buyerId: ID!) {
-  buyer(buyerId: $buyerId) {
-    id
-    rules {
-      ...VendorRule
-    }
-  }
-}
