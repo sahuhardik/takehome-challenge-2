@@ -1,0 +1,147 @@
+import { nestDatabaseTest } from '../../testing';
+import Member from '../../model/member.entity';
+import { MemberType } from '@common/dto/common.dto';
+import Notification, { NotificationStatus, SmsNotification } from '../../model/notification.entity';
+import { NotificationChannel, NotificationType } from '@common/enums/communication.enum';
+import NotificationService from '@server/services/notification/NotificationService';
+import { ServiceModule } from '@server/services/module';
+import { TimeZone } from '@common/enums/general.enum';
+import moment from 'moment-timezone';
+
+const describe = nestDatabaseTest({
+  imports: [ServiceModule],
+});
+
+
+describe('Notification Service', (it) => {
+  let vendor: Member;
+
+  beforeEach(async () => {
+    vendor = new Member();
+    vendor.preferences = {
+      buyerNotificationWindow: {
+        start: undefined,
+        stop: undefined,
+      },
+      providerNotificationWindow: {
+        start: undefined,
+        stop: undefined,
+      },
+      review: undefined,
+    };
+    vendor.preferences.buyerNotificationWindow = { start: '07:30', stop: '21:45' };
+    vendor.preferences.providerNotificationWindow = { start: '05:00', stop: '22:45' };
+    vendor.timezone = TimeZone.US_CENTRAL;
+  });
+
+
+  it('Should not change timestamp for sending vendor SMS notification to buyer and provider', async (manager, module) => {
+    const service = module.get(NotificationService);
+
+    const mockDate = moment.tz('2020-04-01T11:01:58.135', vendor.timezone).toDate();
+
+    const scheduledBuyerTimestamp = service.getScheduledTimestampForSendingVendorSMSNotification(vendor, MemberType.BUYER, mockDate.getTime());
+    expect(scheduledBuyerTimestamp.toISOString()).toBe(mockDate.toISOString());
+
+    const scheduledProviderTimestamp = service.getScheduledTimestampForSendingVendorSMSNotification(vendor, MemberType.PROVIDER, mockDate.getTime());
+    expect(scheduledProviderTimestamp.toISOString()).toBe(mockDate.toISOString());
+  });
+
+  it('Should change timestamp for sending vendor SMS notification to the start window of the next day for buyer but NOT provider', async (manager, module) => {
+    const service = module.get(NotificationService);
+
+    const mockDate = moment.tz('2020-04-01T22:01:58.135', vendor.timezone).toDate(); // After buyer stop window of current day
+
+    const scheduledProviderTimestamp = service.getScheduledTimestampForSendingVendorSMSNotification(vendor, MemberType.PROVIDER, mockDate.getTime());
+    expect(scheduledProviderTimestamp.toISOString()).toBe(mockDate.toISOString());
+
+    const scheduledBuyerTimestamp = service.getScheduledTimestampForSendingVendorSMSNotification(vendor, MemberType.BUYER, mockDate.getTime());
+    expect(scheduledBuyerTimestamp.toISOString()).toBe(moment.tz('2020-04-02T07:30:00.0', vendor.timezone).toISOString());
+  });
+
+  it('Should change timestamp for sending vendor SMS notification to the start window of the next day for buyer AND provider', async (manager, module) => {
+    const service = module.get(NotificationService);
+
+    const mockDate = moment.tz('2020-04-01T23:01:58.135', vendor.timezone).toDate(); // After stop windows of current day
+
+    const scheduledProviderTimestamp = service.getScheduledTimestampForSendingVendorSMSNotification(vendor, MemberType.BUYER, mockDate.getTime());
+    expect(scheduledProviderTimestamp.toISOString()).toBe(moment.tz('2020-04-02T07:30:00.0', vendor.timezone).toISOString());
+
+    const scheduledBuyerTimestamp = service.getScheduledTimestampForSendingVendorSMSNotification(vendor, MemberType.PROVIDER, mockDate.getTime());
+    expect(scheduledBuyerTimestamp.toISOString()).toBe(moment.tz('2020-04-02T05:00:00.0', vendor.timezone).toISOString());
+  });
+
+  it('Should change timestamp for sending vendor SMS notification to the start window of the same day for buyer AND provider', async (manager, module) => {
+    const service = module.get(NotificationService);
+
+    const mockDate = moment.tz('2020-04-01T03:01:58.135', vendor.timezone).toDate(); // Before start windows of current da
+
+    const scheduledProviderTimestamp = service.getScheduledTimestampForSendingVendorSMSNotification(vendor, MemberType.BUYER, mockDate.getTime());
+    expect(scheduledProviderTimestamp.toISOString()).toBe(moment.tz('2020-04-01T07:30:00.0', vendor.timezone).toISOString());
+
+    const scheduledBuyerTimestamp = service.getScheduledTimestampForSendingVendorSMSNotification(vendor, MemberType.PROVIDER, mockDate.getTime());
+    expect(scheduledBuyerTimestamp.toISOString()).toBe(moment.tz('2020-04-01T05:00:00.0', vendor.timezone).toISOString());
+  });
+
+  it('Reaper should NOT prepare to send text message if it is not yet the scheduled timestamp', async (manager, module) => {
+    const service = module.get(NotificationService);
+
+    const mockDate = moment.tz('2020-04-01T23:01:58.135', vendor.timezone).toDate(); // now
+
+    const unsentNotificationReadyToBeSent = new SmsNotification();
+    unsentNotificationReadyToBeSent.scheduled = moment.tz('2020-04-01T22:30:00.0', vendor.timezone).toDate(); // Scheduled for before now
+    unsentNotificationReadyToBeSent.status = NotificationStatus.UNSENT;
+    unsentNotificationReadyToBeSent.type = NotificationType.JOB_CANCELED;
+    unsentNotificationReadyToBeSent.unique = `${mockDate.getTime()}`;
+    unsentNotificationReadyToBeSent.text = 'Message 1 should be sent!';
+    unsentNotificationReadyToBeSent.channel = NotificationChannel.SMS;
+    unsentNotificationReadyToBeSent.fromId = 'null';
+    unsentNotificationReadyToBeSent.toId = 'null';
+
+    const unsentNotificationReadyToBeSent2 = new SmsNotification();
+    unsentNotificationReadyToBeSent2.scheduled = moment.tz('2020-04-01T23:01:58.135', vendor.timezone).toDate(); // Scheduled for exactly now
+    unsentNotificationReadyToBeSent2.status = NotificationStatus.UNSENT;
+    unsentNotificationReadyToBeSent2.type = NotificationType.JOB_CANCELED;
+    unsentNotificationReadyToBeSent2.unique = `${mockDate.getTime()}`;
+    unsentNotificationReadyToBeSent2.text = 'Message 2 should be sent!';
+    unsentNotificationReadyToBeSent2.channel = NotificationChannel.SMS;
+    unsentNotificationReadyToBeSent2.fromId = 'null';
+    unsentNotificationReadyToBeSent2.toId = 'null';
+
+    const unsentNotificationNotReadyToBeSent = new SmsNotification();
+    unsentNotificationNotReadyToBeSent.scheduled = moment.tz('2020-04-02T07:30:00.0', vendor.timezone).toDate(); // Scheduled for next day
+    unsentNotificationNotReadyToBeSent.status = NotificationStatus.UNSENT;
+    unsentNotificationNotReadyToBeSent.type = NotificationType.JOB_CANCELED;
+    unsentNotificationNotReadyToBeSent.unique = `${mockDate.getTime()}`;
+    unsentNotificationNotReadyToBeSent.text = 'Message 1 should not be sent!';
+    unsentNotificationNotReadyToBeSent.channel = NotificationChannel.SMS;
+    unsentNotificationNotReadyToBeSent.fromId = 'null';
+    unsentNotificationNotReadyToBeSent.toId = 'null';
+
+    const unsentNotificationNotReadyToBeSent2 = new SmsNotification();
+    unsentNotificationNotReadyToBeSent2.scheduled = moment.tz('2020-04-01T23:01:59.135', vendor.timezone).toDate(); // Scheduled for 1 second after now
+    unsentNotificationNotReadyToBeSent2.status = NotificationStatus.UNSENT;
+    unsentNotificationNotReadyToBeSent2.type = NotificationType.JOB_CANCELED;
+    unsentNotificationNotReadyToBeSent2.unique = `${mockDate.getTime()}`;
+    unsentNotificationNotReadyToBeSent2.text = 'Message 2 should not be sent!';
+    unsentNotificationNotReadyToBeSent2.channel = NotificationChannel.SMS;
+    unsentNotificationNotReadyToBeSent2.fromId = 'null';
+    unsentNotificationNotReadyToBeSent2.toId = 'null';
+
+    await manager.save(unsentNotificationReadyToBeSent);
+    await manager.save(unsentNotificationReadyToBeSent2);
+    await manager.save(unsentNotificationNotReadyToBeSent);
+    await manager.save(unsentNotificationNotReadyToBeSent2);
+
+    const notifications = await manager.find(Notification);
+
+    expect(notifications.length).toBe(4);
+
+    // @ts-ignore - Testing private method
+    const readyNotifications = await service.findReadyNotifications(manager, mockDate.getTime());
+
+    expect(readyNotifications.length).toBe(2);
+    expect(readyNotifications[0]).toStrictEqual(unsentNotificationReadyToBeSent);
+    expect(readyNotifications[1]).toStrictEqual(unsentNotificationReadyToBeSent2);
+  });
+});

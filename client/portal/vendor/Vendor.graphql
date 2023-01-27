@@ -1,0 +1,366 @@
+query VendorCounts($vendorId: ID!) {
+  vendor(memberId: $vendorId) {
+    id
+    jobsChangedCount
+    jobsReadyCount
+    jobsSubmittedCount
+    jobsUnclaimedCount
+    jobsUnscheduledCount
+    ordersNew
+  }
+}
+
+query VendorAccount($vendorId: ID!) {
+  vendor(memberId: $vendorId) {
+    id
+    cube
+    company
+    timezoneDisplay
+    algolia
+    showCalendarTitles
+    collapseTimeSlots
+  }
+}
+
+query VendorUnclaimedJobs($vendorId: ID!) {
+  vendor(memberId: $vendorId) {
+    id
+    jobsUnclaimed {
+      ...VendorTodoActions
+      name
+      stage
+    }
+  }
+}
+
+fragment VendorDashboardTodo on Job {
+  ...VendorTodoActions
+  name
+  stage
+}
+
+query VendorDashboardTodos {
+  profile {
+    id
+    todos {
+      ...VendorDashboardTodo
+    }
+  }
+}
+
+mutation VendorDashboardTodoStatus($jobId: ID!, $status: JobStatus!) {
+  changeStatus(jobId: $jobId, status: $status) {
+    ...VendorDashboardTodo
+    member {
+      id
+      activity {
+        ...ActivityLog
+      }
+    }
+    user {
+      id
+      todos {
+        ...VendorDashboardTodo
+      }
+    }
+  }
+}
+
+mutation VendorUpdateProviders($providers: [ProvidersOrderWrite!]!) {
+  updateVendorProviders(providers: $providers)
+}
+
+mutation VendorUpdatePerformables($performables: [PerformableOrderWrite!]!) {
+  updateVendorPerformables(performables: $performables)
+}
+
+query VendorActivity($vendorId: ID!) {
+  member(memberId: $vendorId) {
+    id
+    activity {
+      ...ActivityLog
+    }
+  }
+}
+
+query VendorUnpaid($vendorId: ID!, $start: DateTime, $end: DateTime) {
+  vendor(memberId: $vendorId) {
+    id
+    unpaid(start: $start, end: $end) {
+      id
+      date
+      amount
+      description
+      memberId
+      line {
+        id
+        created
+        invoice {
+          id
+          order {
+            id
+            address {
+              addressFirst
+            }
+          }
+          buyer {
+            id
+            member {
+              id
+              company
+            }
+          }
+        }
+      }
+      job {
+        id
+        start
+        orderId
+      }
+    }
+  }
+}
+
+query VendorLedger($vendorId: ID!, $start: DateTime, $end: DateTime, $paging: PaginationArgs) {
+  vendor(memberId: $vendorId) {
+    id
+    ledger(start: $start, end: $end, paging: $paging) {
+      total
+      objects {
+        id
+        date
+        amount
+        description
+        job {
+          id
+          orderId
+          order {
+            id
+            address {
+              addressFirst
+            }
+            buyer {
+              id
+              member {
+                id
+                company
+              }
+            }
+          }
+          start
+          assignee {
+            id
+            company
+          }
+        }
+      }
+    }
+  }
+}
+
+query VendorJobs($vendorId: ID!) {
+  vendor(memberId: $vendorId) {
+    id
+    algolia
+    fields {
+      id
+      name
+      showOnOrderList
+    }
+    orders(filter: INCOMPLETE) {
+      id
+      created
+      alert
+      metadata {
+        propertyId
+        display
+      }
+      address {
+        line1
+        longitude
+        latitude
+        addressFirst
+        addressSecond
+        city
+        state
+      }
+      buyer {
+        id
+        member {
+          id
+          company
+        }
+      }
+      jobs {
+        id
+        alert
+        name
+        start
+        health
+        stage
+        stageName
+        stageDescription
+        performable {
+          id
+          shortName
+        }
+      }
+    }
+  }
+}
+
+fragment VendorJobDetails on Job {
+  id
+  ...JobBadge
+  status
+  statusLabel
+  cancelable
+  completable
+  removable
+  stage
+  stageName
+  user {
+    id
+    name
+  }
+  nextStatus(type: INTERNAL)
+  nextStatusLabel(type: INTERNAL)
+  properties(valuable: true) {
+    id
+    property {
+      id
+      name
+    }
+    display
+  }
+}
+
+query VendorJobDetailsComponent($jobId: ID!) {
+  orderJob(jobId: $jobId) {
+    ...VendorJobDetails
+  }
+}
+
+fragment VendorOrderMetadata on Order {
+  metadata {
+    title
+    display
+  }
+}
+
+query VendorOrderAccordian($orderId: ID!) {
+  order(orderId: $orderId) {
+    id
+    ...VendorOrderMetadata
+  }
+}
+
+query VendorProviders($vendorId: ID!) {
+  vendor(memberId: $vendorId) {
+    id
+    company
+    providers {
+      id
+      sort
+      performables {
+        id
+        performableId
+      }
+      member {
+        id
+        company
+      }
+    }
+  }
+}
+
+query VendorPerformables($vendorId: ID!) {
+  vendor(memberId: $vendorId) {
+    id
+    performables {
+      id
+      name
+      internalName
+      type
+      properties {
+        id
+        name
+        fieldType
+        values {
+          id
+          name
+        }
+      }
+    }
+  }
+}
+
+fragment VendorOrderJobList on Order {
+  jobs {
+    ...JobBadge
+    id
+    expense
+    revenue
+    start
+    removable
+    cancelable
+    completable
+    end
+    locked
+    status
+    name
+    onsite
+    alert
+    statusLabel
+    statusDescription
+    nextStatus(type: INTERNAL)
+    nextStatusLabel(type: INTERNAL)
+    assignee {
+      id
+      company
+    }
+    user {
+      id
+      name
+      dateOfBirth
+    }
+    properties(valuable: true) {
+      id
+      display
+      property {
+        id
+        name
+      }
+    }
+    performable {
+      id
+      internalName
+      shortName
+    }
+  }
+}
+
+query VendorOrderJobs($orderId: ID!) {
+  order(orderId: $orderId) {
+    id
+    ...VendorOrderJobList
+  }
+}
+
+mutation VendorAddTodo($name: String!, $vendorId: ID!) {
+  createGlobalTodo(name: $name, vendorId: $vendorId) {
+    id
+  }
+}
+
+mutation VendorCustomerAddTodo($name: String!, $buyerRelId: ID!) {
+  createCustomerTodo(name: $name, buyerRelId: $buyerRelId) {
+    id
+  }
+}
+
+fragment AttachmentDetails on Attachment {
+  url
+  name
+  mime
+}
